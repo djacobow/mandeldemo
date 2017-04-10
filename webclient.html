@@ -1,14 +1,15 @@
 <html>
     <head>
-        <title>Fractal Demo</title>
+        <title>Fractal / Cluster Demo</title>
     </head>
-    <body>
-        <p>Fractal Demo</p>
+    <body style="background-color: #101010; color: #e0e0e0;">
+        <h2>Fractal / Cluster Demo</h2>
+        <p>Click your mouse on the upper left corner, then drag to the lower right corner and release to zoom.</p>
         <div id="ctrldiv">
-            <input type="button" value="reset" id="resetbutton">
+            <input style="font-size: 200%;" type="button" value="reset" id="resetbutton">
         </div>
         <div id="displaydiv">
-            <canvas id="viewport" width="1000" height="1000"></canvas>
+            <canvas style="display: block; margin: 0 auto;" id="viewport" width="1024" height="1024"></canvas>
         </div>
         <script type="text/javascript" src="webclient.js"></script>
     </body>

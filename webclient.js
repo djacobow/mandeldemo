@@ -7,10 +7,10 @@ config = {
 
 
 var params = {
-    max_iters: 200,
+    max_iters: 255,
     escape_val: 2,
-    x_pels: 1000,
-    y_pels: 1000,
+    x_pels: 1024,
+    y_pels: 1024,
     x_min: -2,
     x_max: 2,
     y_min: -2,
@@ -33,8 +33,8 @@ function handleReturnedData(res) {
     for (var i=0; i< res.data.length; i++) {
         var dv = res.data[i];
         iData.data[4*i + 0] = dv;
-        iData.data[4*i + 1] = dv;
-        iData.data[4*i + 2] = dv;
+        iData.data[4*i + 1] = dv < 127 ? dv : 255 - dv;
+        iData.data[4*i + 2] = params.max_iters - dv;
         iData.data[4*i + 3] = 0xff;
     }
 
