@@ -7,7 +7,7 @@ var fs = require('fs');
 var request = require('request');
 var submit_count = 0;
 
-var slaves = [ 'slave0' ];
+var slaves = [ 'slave0', 'slave1', 'slave2', 'slave3', 'slave4' ,'slave5' ];
 
 http.createServer(function(req, res) {
     var headers = {
@@ -31,6 +31,7 @@ http.createServer(function(req, res) {
 
         var slave_idx = submit_count % slaves.length;
         var slave = slaves[slave_idx];
+        submit_count += 1;
         var newurl  = 'http://' + slave + ':5001/?' +
                       oldpurl.query;
         console.log(newurl);
