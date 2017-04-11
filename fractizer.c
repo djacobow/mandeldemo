@@ -104,6 +104,28 @@ static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint
     return iter < pparams->max_iters;
 };
 
+static inline uint8_t calc_pixel_mbbs(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+    double z_r = 0;
+    double z_i = 0;
+    double c_r = x;
+    double c_i = y;
+    uint16_t iter = 0;
+    double val = 0;
+    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
+        z_r = fabs(z_r);
+        z_i = fabs(z_i);
+        double z_n1_r = z_r * z_r - z_i * z_i + c_r;
+        double z_n1_i = 2.0 * z_r * z_i + c_i;
+        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
+        iter++;
+        z_r = z_n1_r;
+        z_i = z_n1_i;
+    }
+    *pval = val;
+    *piters = iter;
+    return iter < pparams->max_iters;
+};
+
 static inline uint8_t calc_pixel_mb3(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
     double z_r = 0;
     double z_i = 0;
@@ -133,10 +155,10 @@ void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
             double x = pparams->x_min + i * x_step;
             uint16_t iters = 0;
             double val = 0;
-            if (pparams->type) {
-                calc_pixel_mb3(pparams, x,y, &iters, &val);
-            } else {
-                calc_pixel_mb(pparams, x,y, &iters, &val);
+            switch (pparams->type) {
+                case 1 : calc_pixel_mb3(pparams, x,y, &iters, &val); break;
+                case 2 : calc_pixel_mbbs(pparams, x,y, &iters, &val); break;
+                default: calc_pixel_mb(pparams, x,y, &iters, &val);
             }
             rbuf[i + j * pparams->x_pels] = iters;
         }
