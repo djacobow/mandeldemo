@@ -18,7 +18,7 @@ var params = {
     x_max: 2,
     y_min: -2,
     y_max: 2,
-    type: 1,
+    type: 0,
 };
 
 /**
@@ -123,7 +123,6 @@ function submitJobs() {
             for (var n=0;n<pkeys.length;n++) {
                 tile_params[pkeys[n]] = params[pkeys[n]];
             }
-
             tile_params.x_min = tile_x_min;
             tile_params.y_min = tile_y_min;
             tile_params.x_max = tile_x_max;
@@ -211,6 +210,13 @@ function storePort(which, evt) {
 
     }
 }
+
+document.getElementById('typesel').addEventListener('change',function() {
+    console.log('heyya!');
+    var type = parseInt(document.getElementById('typesel').value);
+    params.type = type;
+    console.log(params);
+});
 
 
 window.addEventListener('resize', function() {

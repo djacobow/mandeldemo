@@ -6,7 +6,11 @@
         <h2>Fractal / Cluster Demo</h2>
         <p>Click your mouse on the upper left corner, then drag to the lower right corner and release to zoom.</p>
         <div id="ctrldiv">
-            <input style="font-size: 200%;" type="button" value="reset" id="resetbutton">
+            <input style="font-size: 200%;" type="button" value="Reset" id="resetbutton">
+            <select id="typesel">
+                <option value="0">z<sup>2</sup>+c</option>
+                <option value="1">z<sup>3</sup>+c</option>
+            </select>
         </div>
         <div id="displaydiv">
             <canvas style="display: block; margin: 0 auto;" id="viewport" width="1024" height="576"></canvas>
