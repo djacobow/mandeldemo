@@ -21,6 +21,7 @@ typedef struct fparams_t {
     uint16_t y_pels;
     uint16_t x_tile;
     uint16_t y_tile;
+    uint8_t  type;
 } fparams_t;
 
 
@@ -36,6 +37,7 @@ fparams_t get_params(int argc, char *argv[]) {
     params.y_pels = 1024;
     params.x_tile = 0;
     params.y_tile = 0;
+    params.type = 0;
 
     if (argc > 1)  params.max_iters   = atol(argv[1]);
     if (argc > 2)  params.escape_val  = atof(argv[2]);
@@ -47,6 +49,7 @@ fparams_t get_params(int argc, char *argv[]) {
     if (argc > 8)  params.y_pels      = atol(argv[8]);
     if (argc > 9)  params.x_tile      = atol(argv[9]);
     if (argc > 10) params.y_tile      = atol(argv[10]);
+    if (argc > 11) params.type        = atol(argv[11]);
     return params;
 
 };
@@ -81,7 +84,7 @@ int open_socket(char *host, uint16_t port) {
 */
 
 
-static inline uint8_t calc_pixel(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
     double z_r = 0;
     double z_i = 0;
     double c_r = x;
@@ -101,6 +104,26 @@ static inline uint8_t calc_pixel(fparams_t *pparams, double x, double y, uint16_
     return iter < pparams->max_iters;
 };
 
+static inline uint8_t calc_pixel_mb3(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+    double z_r = 0;
+    double z_i = 0;
+    double c_r = x;
+    double c_i = y;
+    uint16_t iter = 0;
+    double val = 0;
+    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
+        double z_n1_r = z_r * z_r * z_r - 3 * z_r * z_i * z_i + c_r;
+        double z_n1_i = 3 * z_r * z_r * z_i - z_i * z_i * z_i + c_i;
+        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
+        iter++;
+        z_r = z_n1_r;
+        z_i = z_n1_i;
+    }
+    *pval = val;
+    *piters = iter;
+    return iter < pparams->max_iters;
+};
+
 void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
     double x_step = (pparams->x_max - pparams->x_min) / (double)pparams->x_pels;
     double y_step = (pparams->y_max - pparams->y_min) / (double)pparams->y_pels;
@@ -110,14 +133,18 @@ void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
             double x = pparams->x_min + i * x_step;
             uint16_t iters = 0;
             double val = 0;
-            calc_pixel(pparams, x,y, &iters, &val);
+            if (pparams->type) {
+                calc_pixel_mb3(pparams, x,y, &iters, &val);
+            } else {
+                calc_pixel_mb(pparams, x,y, &iters, &val);
+            }
             rbuf[i + j * pparams->x_pels] = iters;
         }
     };
 };
 
 void dump_fractal(fparams_t *pparams, uint16_t *rbuf) {
-    printf("%u %f %f %f %f %f %u %u %u %u\n",
+    printf("%u %f %f %f %f %f %u %u %u %u %u\n",
             pparams->max_iters,
             pparams->escape_val,
             pparams->x_min,
@@ -127,7 +154,8 @@ void dump_fractal(fparams_t *pparams, uint16_t *rbuf) {
             pparams->x_pels,
             pparams->y_pels,
             pparams->x_tile,
-            pparams->y_tile
+            pparams->y_tile,
+            pparams->type
             );
     uint32_t len = pparams->x_pels * pparams->y_pels;
     for (uint32_t i=0; i<len; i++) {

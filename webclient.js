@@ -18,6 +18,7 @@ var params = {
     x_max: 2,
     y_min: -2,
     y_max: 2,
+    type: 1,
 };
 
 /**

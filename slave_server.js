@@ -18,6 +18,7 @@ function makeFractal(parms, cb) {
         [ 'y_pels', 'i' ],
         [ 'x_tile', 'i' ],
         [ 'y_tile', 'i' ],
+        [ 'type', 'i' ],
     ];
     args = argnames.map(function(n) { return parms[n[0]].toString(); });
     cmd += ' ' + args.join(' ');
