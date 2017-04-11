@@ -104,6 +104,27 @@ static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint
     return iter < pparams->max_iters;
 };
 
+static inline uint8_t calc_pixel_cos(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+    double z_r = 0;
+    double z_i = 0;
+    double c_r = x;
+    double c_i = y;
+    uint16_t iter = 0;
+    double val = 0;
+    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
+        z_i = -z_i;
+        double z_n1_r = cos(z_r) * cosh(z_i);
+        double z_n1_i = -sin(z_r) * sinh(z_i);
+        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
+        iter++;
+        z_r = z_n1_r;
+        z_i = z_n1_i;
+    }
+    *pval = val;
+    *piters = iter;
+    return iter < pparams->max_iters;
+};
+
 static inline uint8_t calc_pixel_mbtc(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
     double z_r = 0;
     double z_i = 0;
@@ -180,6 +201,7 @@ void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
                 case 1 : calc_pixel_mb3(pparams, x,y, &iters, &val); break;
                 case 2 : calc_pixel_mbbs(pparams, x,y, &iters, &val); break;
                 case 3 : calc_pixel_mbtc(pparams, x,y, &iters, &val); break;
+                case 4 : calc_pixel_cos(pparams, x,y, &iters, &val); break;
                 default: calc_pixel_mb(pparams, x,y, &iters, &val);
             }
             rbuf[i + j * pparams->x_pels] = iters;
