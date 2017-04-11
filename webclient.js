@@ -36,7 +36,7 @@ var params = {
 function hslToRgb(h, s, l){
     var r, g, b;
 
-    if(s == 0){
+    if(s === 0){
         r = g = b = l; // achromatic
     }else{
         var hue2rgb = function hue2rgb(p, q, t){
@@ -46,7 +46,7 @@ function hslToRgb(h, s, l){
             if(t < 1/2) return q;
             if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
             return p;
-        }
+        };
 
         var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
         var p = 2 * l - q;
@@ -93,6 +93,16 @@ function handleReturnedData(res) {
     ctx.putImageData( iData, x_min_pel, y_min_pel); 
 }
 
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+}
+
 function submitJobs() {
 
     /*
@@ -107,6 +117,7 @@ function submitJobs() {
 
     var tilenum = 0;
 
+    var render_urls = [];
     for (var yt=0; yt<config.y_tiles; yt++) {
         var tile_y_min = params.y_min + yt * y_height / config.y_tiles;
         var tile_y_max = tile_y_min + y_height / config.y_tiles;
@@ -132,11 +143,6 @@ function submitJobs() {
             tile_params.x_tile = xt;
             tile_params.y_tile = yt;
 
-            var xhr = new XMLHttpRequest();
-            /* jslint loopfunc:true */
-            xhr.addEventListener('load', function(evt) {
-                handleReturnedData(JSON.parse(evt.currentTarget.response));
-            });
             var urlchunks = ['render/?'];
             pkeys = Object.keys(tile_params);
             for (var m=0;m<pkeys.length;m++) {
@@ -145,12 +151,27 @@ function submitJobs() {
             }
             var final_url = urlchunks.join('');
             console.log('FINAL_URL: ' + final_url);
-            xhr.open('GET',final_url);
-            xhr.send();
+            render_urls.push(final_url);
             tilenum += 1;
         }
     }
 
+    // make it seem more like stuff is happening randomly
+    // Browsers limit connections to just a few, so the jobs 
+    // are still sent out more or less sequentially and will
+    // finish more or less sequentially
+    shuffle(render_urls);
+
+    for (var i=0; i<render_urls.length; i++) {
+        var render_url = render_urls[i];
+        var xhr = new XMLHttpRequest();
+        /* jslint loopfunc:true */
+        xhr.addEventListener('load', function(evt) {
+            handleReturnedData(JSON.parse(evt.currentTarget.response));
+        });
+        xhr.open('GET',render_url);
+        xhr.send();
+    }
 
 }
 
