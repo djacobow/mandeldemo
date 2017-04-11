@@ -111,7 +111,7 @@ void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
             uint16_t iters = 0;
             double val = 0;
             calc_pixel(pparams, x,y, &iters, &val);
-            rbuf[i + j * pparams->y_pels] = iters;
+            rbuf[i + j * pparams->x_pels] = iters;
         }
     };
 };
