@@ -112,7 +112,6 @@ static inline uint8_t calc_pixel_cos(fparams_t *pparams, double x, double y, uin
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        z_i = -z_i;
         double z_n1_r = cos(z_r) * cosh(z_i);
         double z_n1_i = -sin(z_r) * sinh(z_i);
         val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
