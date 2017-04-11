@@ -1,7 +1,7 @@
 
 config = {
- x_tiles: 4,
- y_tiles: 4,
+ x_tiles: 5,
+ y_tiles: 5,
 
 };
 
@@ -9,8 +9,8 @@ config = {
 var params = {
     max_iters: 255,
     escape_val: 2,
-    x_pels: 1024,
-    y_pels: 1024,
+    x_pels: 1500,
+    y_pels: 1500,
     x_min: -2,
     x_max: 2,
     y_min: -2,
@@ -76,8 +76,8 @@ function submitJobs() {
             tile_params.y_min = tile_y_min;
             tile_params.x_max = tile_x_max;
             tile_params.y_max = tile_y_max;
-            tile_params.y_pels = tile_y_pels;
             tile_params.x_pels = tile_x_pels;
+            tile_params.y_pels = tile_y_pels;
             tile_params.x_tile = xt;
             tile_params.y_tile = yt;
 
@@ -161,4 +161,17 @@ function storePort(which, evt) {
 }
 
 
-
+/*
+window.addEventListener('resize', function() {
+  console.log('resize');
+  var canvas = document.getElementById('viewport');
+  var ctx = canvas.getContext('2d');
+  x = Math.floor(0.225 * window.innerWidth) * 4;
+  y = Math.floor(0.225 * window.innerHeight) * 4;
+  params.x_pels = x;
+  params.y_pels = y;
+  ctx.canvas.width  = x;
+  ctx.canvas.height = y;
+  console.log(params);
+});
+*/
