@@ -5,12 +5,15 @@ config = {
 
 };
 
+var roundBy = function(a,r) {
+    return r * Math.floor(a / r);
+};
 
 var params = {
     max_iters: 255,
-    escape_val: 2,
-    x_pels: 1500,
-    y_pels: 1500,
+    escape_val: 20,
+    x_pels: roundBy(1024, 20),
+    y_pels: roundBy(576, 20),
     x_min: -2,
     x_max: 2,
     y_min: -2,
@@ -32,9 +35,15 @@ function handleReturnedData(res) {
 
     for (var i=0; i< res.data.length; i++) {
         var dv = res.data[i];
-        iData.data[4*i + 0] = dv;
-        iData.data[4*i + 1] = dv < 127 ? dv : 255 - dv;
-        iData.data[4*i + 2] = params.max_iters - dv;
+        if (true) {
+            iData.data[4*i + 0] = dv < 128 ? 2 * dv : 255;
+            iData.data[4*i + 1] = dv < 64  ? 4 * dv : 255;
+            iData.data[4*i + 2] = dv < 84  ? 3 * dv : 255;
+        } else {
+            iData.data[4*i + 0] = Math.sqrt(dv) * 16.0;
+            iData.data[4*i + 1] = 0;
+            iData.data[4*i + 2] = dv * dv / 256;
+        }
         iData.data[4*i + 3] = 0xff;
     }
 
@@ -161,17 +170,16 @@ function storePort(which, evt) {
 }
 
 
-/*
 window.addEventListener('resize', function() {
   console.log('resize');
   var canvas = document.getElementById('viewport');
   var ctx = canvas.getContext('2d');
-  x = Math.floor(0.225 * window.innerWidth) * 4;
-  y = Math.floor(0.225 * window.innerHeight) * 4;
+  var round = 20;
+  x = roundBy(0.9 * window.innerWidth, round);
+  y = roundBy(0.9 * window.innerHeight, round);
   params.x_pels = x;
   params.y_pels = y;
   ctx.canvas.width  = x;
   ctx.canvas.height = y;
   console.log(params);
 });
-*/
