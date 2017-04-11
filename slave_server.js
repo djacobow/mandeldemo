@@ -1,6 +1,7 @@
 #!/usr/bin/env nodejs
 
-var http = require('http');
+var connect = require('connect');
+var compression = require('compression');
 var chprocess = require('child_process');
 var url = require('url');
 
@@ -51,6 +52,7 @@ function makeFractal(parms, cb) {
 }
 
 function getParamsFromUrl(inurl) {
+    console.log(inurl);
     var sp = url.parse(inurl).query;
     var chunks = sp.split(/&/);
     var res = {};
@@ -61,7 +63,10 @@ function getParamsFromUrl(inurl) {
     return res;
 }
 
-http.createServer(function(req, res) {
+var app = connect();
+app.use(compression({ filter: function(req,res) { return true; } }));
+
+app.use(function(req, res) {
     console.log('got request');
     var parms = getParamsFromUrl(req.url);
     var headers = {
@@ -77,6 +82,8 @@ http.createServer(function(req, res) {
         res.writeHead(200,headers);
         res.end(JSON.stringify(fres));
     });
-}).listen(5001);
+});
+
+app.listen(5001);
 
 

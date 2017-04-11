@@ -1,15 +1,29 @@
 #!/usr/bin/env nodejs
 
-var http = require('http');
+var connect = require('connect');
+var compression = require('compression');
 var chprocess = require('child_process');
 var url = require('url');
 var fs = require('fs');
 var request = require('request');
 var submit_count = 0;
 
+var local_debug = false;
 var slaves = [ 'slave0', 'slave1', 'slave2', 'slave3', 'slave4' ,'slave5' ];
+if (local_debug) {
+    slaves = [ 'localhost', ];
+}
 
-http.createServer(function(req, res) {
+var app = connect();
+
+app.use(compression({
+    filter: function(req, res) {
+        if (req.url.match(/render\//)) return true;
+        return false;
+    }
+}));
+
+app.use(function(req, res) {
     var headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -20,13 +34,13 @@ http.createServer(function(req, res) {
         fs.readFile('webclient.html', function(err, data) {
             res.writeHead(200);
             res.end(data);
-        })
+        });
     } else if (req.url.match(/\.js$/)) {
         console.log('get client js');
         fs.readFile('webclient.js', function(err, data) {
             res.writeHead(200);
             res.end(data);
-        })
+        });
     } else if (req.url.match(/render\//)) {
         console.log('render request');
         var oldpurl = url.parse(req.url);
@@ -45,7 +59,7 @@ http.createServer(function(req, res) {
                 res.writeHead(500,headers);
                 res.end('');
                 return;
-            };
+            }
             res.writeHead(200,headers);
             res.end(pbody);
         });
@@ -54,6 +68,8 @@ http.createServer(function(req, res) {
         res.writeHead(500,headers);
         res.end(JSON.stringify({'ERROR': 'Something went wrong.'}));
     }
-}).listen(5000);
+});
+
+app.listen(5000);
 
 

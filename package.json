@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/djacobow/mandeldemo#readme",
   "dependencies": {
-    "compress": "^0.99.0",
+    "compression": "^1.6.2",
     "connect": "^3.6.0",
     "request": "^2.81.0"
   }
