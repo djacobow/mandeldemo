@@ -20,10 +20,10 @@ var params = {
     escape_val: 20,
     x_pels: roundBy(1024, 20),
     y_pels: roundBy(576, 20),
-    x_min: -20,
-    x_max: 20,
-    y_min: -20,
-    y_max: 20,
+    x_min: -2,
+    x_max: 2,
+    y_min: -2,
+    y_max: 2,
     type: 0,
 };
 
@@ -288,7 +288,7 @@ function adjustViewport() {
   ctx.canvas.width  = x;
   ctx.canvas.height = y;
   console.log(params);
-  do_reset();
+  submitJobs();
 }
 
 function doOnceAtStart() {
