@@ -4,6 +4,11 @@ config = {
  y_tiles: 10,
  sat: 0.5,
  lum: 0.5,
+ // starter params
+ x_min: -2,
+ x_max: 2,
+ y_min: -2,
+ y_max: 2,
 };
 
 var roundBy = function(a,r) {
@@ -15,10 +20,10 @@ var params = {
     escape_val: 20,
     x_pels: roundBy(1024, 20),
     y_pels: roundBy(576, 20),
-    x_min: -2,
-    x_max: 2,
-    y_min: -2,
-    y_max: 2,
+    x_min: -20,
+    x_max: 20,
+    y_min: -20,
+    y_max: 20,
     type: 0,
 };
 
@@ -115,6 +120,8 @@ function shuffle(a) {
 
 function submitJobs() {
 
+    setDisplayWindow(params.x_min,params.y_min,params.x_max,params.y_max);
+
     /*
     var form_params = ['x_min', 'x_max', 'y_min', 'y_max'];
     for (var i=0;i<form_params.length;i++) {
@@ -185,13 +192,14 @@ function submitJobs() {
 
 }
 
-document.getElementById('resetbutton').addEventListener('click',function() {
-    params.x_min = -2;
-    params.x_max = 2;
-    params.y_min = -2;
-    params.y_max = 2;
+
+function do_reset() {
+    params.x_min = config.x_min;
+    params.x_max = config.x_max;
+    params.y_min = config.y_min;
+    params.y_max = config.y_max;
     submitJobs();
-});
+}
 
 
     
@@ -233,6 +241,12 @@ function storePort(which, evt) {
     }
 }
 
+function setDisplayWindow(x1,y1,x2,y2) {
+    document.getElementById('xmin').value = x1.toString();
+    document.getElementById('ymin').value = y1.toString();
+    document.getElementById('xmax').value = x2.toString();
+    document.getElementById('ymax').value = y2.toString();
+}
 
 function getParamsFromPage() {
     var type = parseInt(document.getElementById('typesel').value);
@@ -249,6 +263,16 @@ function getParamsFromPage() {
     config.sat = sat;
     var lum = parseFloat(document.getElementById('color_lum').value);
     config.lum= lum;
+
+    var xmin = parseFloat(document.getElementById('xmin').value);
+    var xmax = parseFloat(document.getElementById('xmax').value);
+    var ymin = parseFloat(document.getElementById('ymin').value);
+    var ymax = parseFloat(document.getElementById('ymax').value);
+    params.x_min = xmin;
+    params.x_max = xmax;
+    params.y_min = ymin;
+    params.y_max = ymax;
+    submitJobs();
 }
 
 
@@ -264,10 +288,18 @@ function adjustViewport() {
   ctx.canvas.width  = x;
   ctx.canvas.height = y;
   console.log(params);
+  do_reset();
 }
 
 function doOnceAtStart() {
-    window.addEventListener('resize', adjustViewport);
+    document.getElementById('resetbutton').addEventListener('click',do_reset);
+
+    var resize_interval_id;
+    window.addEventListener('resize', function() {
+        clearTimeout(resize_interval_id);
+        resize_interval_id = setTimeout(adjustViewport,500);
+    });
+
     document.getElementById('typesel').addEventListener('change',getParamsFromPage);
     document.getElementById('tilex').addEventListener('change',getParamsFromPage);
     document.getElementById('tiley').addEventListener('change',getParamsFromPage);
@@ -275,8 +307,13 @@ function doOnceAtStart() {
     document.getElementById('maxiters').addEventListener('change',getParamsFromPage);
     document.getElementById('color_sat').addEventListener('change',getParamsFromPage);
     document.getElementById('color_lum').addEventListener('change',getParamsFromPage);
-    adjustViewport();
+    document.getElementById('xmin').addEventListener('change',getParamsFromPage);
+    document.getElementById('xmax').addEventListener('change',getParamsFromPage);
+    document.getElementById('ymin').addEventListener('change',getParamsFromPage);
+    document.getElementById('ymax').addEventListener('change',getParamsFromPage);
+
     getParamsFromPage();
+    adjustViewport();
     var canvas = document.getElementById('viewport');
     canvas.addEventListener('mousedown', function(evt) {
         evt.preventDefault();

@@ -3,8 +3,8 @@
         <title>Fractal / Cluster Demo</title>
     </head>
     <body style="background-color: #101010; color: #e0e0e0;">
-        <h2>Fractal / Cluster Demo</h2>
-        <p>Click your mouse on the upper left corner, then drag to the lower right corner and release to zoom.</p>
+        <span style="font-size: 120%">Fractal / Cluster Demo</span><br>
+        <span>Click your mouse on the upper left corner, then drag to the lower right corner and release to zoom.</span>
         <div id="ctrldiv">
             <input style="font-size: 200%;" type="button" value="Reset" id="resetbutton">
             algorithm
@@ -78,9 +78,14 @@
                 <option value="0.9">0.9</option>
                 <option value="1">1</option>
             </select>
-
-
+            <br>
+            window
+            <input size="20" type="number" id="xmin">
+            <input size="20" type="number" id="xmax">
+            <input size="20" type="number" id="ymin">
+            <input size="20" type="number" id="ymax">
         </div>
+        <br>
         <div id="displaydiv">
             <canvas style="display: block; margin: 0 auto;" id="viewport" width="1024" height="576"></canvas>
         </div>
