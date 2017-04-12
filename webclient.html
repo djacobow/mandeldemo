@@ -7,13 +7,79 @@
         <p>Click your mouse on the upper left corner, then drag to the lower right corner and release to zoom.</p>
         <div id="ctrldiv">
             <input style="font-size: 200%;" type="button" value="Reset" id="resetbutton">
+            algorithm
             <select id="typesel">
-                <option value="0">z<sup>2</sup>+c</option>
-                <option value="1">z<sup>3</sup>+c</option>
+                <option selected="selected" value="0">z^2+c</option>
+                <option value="1">z^3+c</option>
                 <option value="2">burning ship</option>
                 <option value="3">tricorn</option>
                 <option value="4">cos(z) + c</option>
             </select>
+            x tiles 
+            <select id="tilex">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option selected="selected" value="4">4</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+            </select>
+            y tiles 
+            <select id="tiley">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option selected="selected" value="4">4</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+            </select>
+            escape value
+            <select id="escape">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option selected="selected" value="4">4</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+            </select>
+            max iterations 
+            <select id="maxiters">
+                <option value="10">1</option>
+                <option value="20">2</option>
+                <option value="5">5</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option selected="selected" value="255">255</option>
+                <option value="1000">1000</option>
+            </select>
+            saturation 
+            <select id="color_sat">
+                <option value="0.1">0.1</option>
+                <option value="0.2">0.2</option>
+                <option value="0.3">0.3</option>
+                <option value="0.4">0.4</option>
+                <option value="0.5" selected="selected">0.5</option>
+                <option value="0.6">0.6</option>
+                <option value="0.7">0.7</option>
+                <option value="0.8">0.8</option>
+                <option value="0.9">0.9</option>
+                <option value="1">1</option>
+            </select>
+            luminance 
+            <select id="color_lum">
+                <option value="0.1">0.1</option>
+                <option value="0.2">0.2</option>
+                <option value="0.3">0.3</option>
+                <option value="0.4">0.4</option>
+                <option value="0.5" selected="selected">0.5</option>
+                <option value="0.6">0.6</option>
+                <option value="0.7">0.7</option>
+                <option value="0.8">0.8</option>
+                <option value="0.9">0.9</option>
+                <option value="1">1</option>
+            </select>
+
+
         </div>
         <div id="displaydiv">
             <canvas style="display: block; margin: 0 auto;" id="viewport" width="1024" height="576"></canvas>

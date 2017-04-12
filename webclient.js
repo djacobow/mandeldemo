@@ -2,7 +2,8 @@
 config = {
  x_tiles: 10,
  y_tiles: 10,
-
+ sat: 0.5,
+ lum: 0.5,
 };
 
 var roundBy = function(a,r) {
@@ -21,6 +22,9 @@ var params = {
     type: 0,
 };
 
+var userRange = {};
+
+
 /**
  * Converts an HSL color value to RGB. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
@@ -35,7 +39,6 @@ var params = {
 /* cribbed from http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion */
 function hslToRgb(h, s, l){
     var r, g, b;
-
     if(s === 0){
         r = g = b = l; // achromatic
     }else{
@@ -74,15 +77,22 @@ function handleReturnedData(res) {
     for (var i=0; i< res.data.length; i++) {
         var dv = res.data[i];
         if (false) {
+            if (params.max_iters != 255) dv *= (255.0 / params.max_iters);
             iData.data[4*i + 0] = dv < 128 ? 2 * dv : 255;
             iData.data[4*i + 1] = dv < 64  ? 4 * dv : 255;
             iData.data[4*i + 2] = dv < 84  ? 3 * dv : 255;
         } else if (false){
+            if (params.max_iters != 255) dv *= (255.0 / params.max_iters);
             iData.data[4*i + 0] = Math.sqrt(dv) * 16.0;
             iData.data[4*i + 1] = 0;
             iData.data[4*i + 2] = dv * dv / 256;
         } else {
-            var color = hslToRgb(dv/255.0, 0.5, 0.5);
+            var color = [];
+            if (dv == params.max_iters) {
+                color = [0,0,0];
+            } else {
+                color = hslToRgb(dv/params.max_iters, config.sat, config.lum);
+            }
             iData.data[4*i + 0] = color[0];
             iData.data[4*i + 1] = color[1];
             iData.data[4*i + 2] = color[2];
@@ -184,19 +194,10 @@ document.getElementById('resetbutton').addEventListener('click',function() {
 });
 
 
-var canvas = document.getElementById('viewport');
-
-canvas.addEventListener('mousedown', function(evt) {
-    storePort('down', evt);
-});
-canvas.addEventListener('mouseup', function(evt) {
-    storePort('up', evt);
-});
-
     
-var userRange = {};
 
 function storePort(which, evt) {    
+    var canvas = document.getElementById('viewport');
     var rect = canvas.getBoundingClientRect();
     var x = evt.clientX - rect.left;
     var y = evt.clientY - rect.top;
@@ -232,15 +233,26 @@ function storePort(which, evt) {
     }
 }
 
-document.getElementById('typesel').addEventListener('change',function() {
-    console.log('heyya!');
+
+function getParamsFromPage() {
     var type = parseInt(document.getElementById('typesel').value);
     params.type = type;
-    console.log(params);
-});
+    var tilex = parseInt(document.getElementById('tilex').value);
+    config.x_tiles = tilex;
+    var tiley = parseInt(document.getElementById('tiley').value);
+    config.y_tiles = tiley;
+    var ev = parseInt(document.getElementById('escape').value);
+    params.escape_val = ev;
+    var mi = parseInt(document.getElementById('maxiters').value);
+    params.max_iters = mi;
+    var sat = parseFloat(document.getElementById('color_sat').value);
+    config.sat = sat;
+    var lum = parseFloat(document.getElementById('color_lum').value);
+    config.lum= lum;
+}
 
 
-window.addEventListener('resize', function() {
+function adjustViewport() {
   console.log('resize');
   var canvas = document.getElementById('viewport');
   var ctx = canvas.getContext('2d');
@@ -252,4 +264,27 @@ window.addEventListener('resize', function() {
   ctx.canvas.width  = x;
   ctx.canvas.height = y;
   console.log(params);
-});
+}
+
+function doOnceAtStart() {
+    window.addEventListener('resize', adjustViewport);
+    document.getElementById('typesel').addEventListener('change',getParamsFromPage);
+    document.getElementById('tilex').addEventListener('change',getParamsFromPage);
+    document.getElementById('tiley').addEventListener('change',getParamsFromPage);
+    document.getElementById('escape').addEventListener('change',getParamsFromPage);
+    document.getElementById('maxiters').addEventListener('change',getParamsFromPage);
+    document.getElementById('color_sat').addEventListener('change',getParamsFromPage);
+    document.getElementById('color_lum').addEventListener('change',getParamsFromPage);
+    adjustViewport();
+    getParamsFromPage();
+    var canvas = document.getElementById('viewport');
+    canvas.addEventListener('mousedown', function(evt) {
+        storePort('down', evt);
+    });
+    canvas.addEventListener('mouseup', function(evt) {
+        storePort('up', evt);
+    });
+}
+
+doOnceAtStart();
+
