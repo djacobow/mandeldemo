@@ -279,6 +279,7 @@ function doOnceAtStart() {
     getParamsFromPage();
     var canvas = document.getElementById('viewport');
     canvas.addEventListener('mousedown', function(evt) {
+        evt.preventDefault();
         storePort('down', evt);
     });
     canvas.addEventListener('mouseup', function(evt) {
