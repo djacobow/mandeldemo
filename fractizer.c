@@ -22,8 +22,13 @@ typedef struct fparams_t {
     uint16_t x_tile;
     uint16_t y_tile;
     uint8_t  type;
+    uint8_t  do_julia;
+    double   jx;
+    double   jy;
 } fparams_t;
 
+
+typedef uint8_t (*ppxlcalc_t)(fparams_t *, double, double, uint16_t *, double *);
 
 fparams_t get_params(int argc, char *argv[]) {
     fparams_t params;
@@ -50,6 +55,9 @@ fparams_t get_params(int argc, char *argv[]) {
     if (argc > 9)  params.x_tile      = atol(argv[9]);
     if (argc > 10) params.y_tile      = atol(argv[10]);
     if (argc > 11) params.type        = atol(argv[11]);
+    if (argc > 12) params.do_julia    = atol(argv[12]);
+    if (argc > 13) params.jx          = atof(argv[13]);
+    if (argc > 14) params.jy          = atof(argv[14]);
     return params;
 
 };
@@ -83,12 +91,13 @@ int open_socket(char *host, uint16_t port) {
 };
 */
 
-
 static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r = 0;
-    double z_i = 0;
-    double c_r = x;
-    double c_i = y;
+    double z_r, z_i, c_r, c_i;
+    if (pparams->do_julia) {
+        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+    } else {
+        z_r = 0; z_i = 0; c_r = x; c_i = y;
+    };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
@@ -105,10 +114,12 @@ static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint
 };
 
 static inline uint8_t calc_pixel_cos(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r = 0;
-    double z_i = 0;
-    double c_r = x;
-    double c_i = y;
+    double z_r, z_i, c_r, c_i;
+    if (pparams->do_julia) {
+        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+    } else {
+        z_r = 0; z_i = 0; c_r = x; c_i = y;
+    };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
@@ -125,10 +136,12 @@ static inline uint8_t calc_pixel_cos(fparams_t *pparams, double x, double y, uin
 };
 
 static inline uint8_t calc_pixel_mbtc(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r = 0;
-    double z_i = 0;
-    double c_r = x;
-    double c_i = y;
+    double z_r, z_i, c_r, c_i;
+    if (pparams->do_julia) {
+        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+    } else {
+        z_r = 0; z_i = 0; c_r = x; c_i = y;
+    };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
@@ -146,10 +159,12 @@ static inline uint8_t calc_pixel_mbtc(fparams_t *pparams, double x, double y, ui
 };
 
 static inline uint8_t calc_pixel_mbbs(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r = 0;
-    double z_i = 0;
-    double c_r = x;
-    double c_i = y;
+    double z_r, z_i, c_r, c_i;
+    if (pparams->do_julia) {
+        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+    } else {
+        z_r = 0; z_i = 0; c_r = x; c_i = y;
+    };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
@@ -167,11 +182,14 @@ static inline uint8_t calc_pixel_mbbs(fparams_t *pparams, double x, double y, ui
     return iter < pparams->max_iters;
 };
 
+
 static inline uint8_t calc_pixel_mb3(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r = 0;
-    double z_i = 0;
-    double c_r = x;
-    double c_i = y;
+    double z_r, z_i, c_r, c_i;
+    if (pparams->do_julia) {
+        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+    } else {
+        z_r = 0; z_i = 0; c_r = x; c_i = y;
+    };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
@@ -190,19 +208,22 @@ static inline uint8_t calc_pixel_mb3(fparams_t *pparams, double x, double y, uin
 void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
     double x_step = (pparams->x_max - pparams->x_min) / (double)pparams->x_pels;
     double y_step = (pparams->y_max - pparams->y_min) / (double)pparams->y_pels;
+
+    ppxlcalc_t ppxlcalc = calc_pixel_mb;
+    switch (pparams->type) {
+        case 1 : ppxlcalc = calc_pixel_mb3; break;
+        case 2 : ppxlcalc = calc_pixel_mbbs; break;
+        case 3 : ppxlcalc = calc_pixel_mbtc; break;
+        case 4 : ppxlcalc = calc_pixel_cos; break;
+        default: ppxlcalc = calc_pixel_mb; 
+    }
     for (uint16_t j=0; j<pparams->y_pels; j++) {
         double y = pparams->y_min + j * y_step;
         for (uint16_t i=0; i<pparams->x_pels; i++) {
             double x = pparams->x_min + i * x_step;
             uint16_t iters = 0;
             double val = 0;
-            switch (pparams->type) {
-                case 1 : calc_pixel_mb3(pparams, x,y, &iters, &val); break;
-                case 2 : calc_pixel_mbbs(pparams, x,y, &iters, &val); break;
-                case 3 : calc_pixel_mbtc(pparams, x,y, &iters, &val); break;
-                case 4 : calc_pixel_cos(pparams, x,y, &iters, &val); break;
-                default: calc_pixel_mb(pparams, x,y, &iters, &val);
-            }
+            ppxlcalc(pparams, x, y, &iters, &val);
             rbuf[i + j * pparams->x_pels] = iters;
         }
     };

@@ -41,6 +41,8 @@
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
             </select>
             max iterations 
             <select id="maxiters">
@@ -51,7 +53,21 @@
                 <option value="100">100</option>
                 <option selected="selected" value="255">255</option>
                 <option value="1000">1000</option>
+                <option value="5000">5000</option>
             </select>
+            julia
+            <input type="checkbox" id="julia">
+            jx
+            <input size="6" type="number" id="jx" value="0.285">
+            jy
+            <input size="6" type="number" id="jy" value="0.01">
+
+            <br>
+            window
+            <input size="20" type="number" id="xmin" value="-2">
+            <input size="20" type="number" id="xmax" value="2">
+            <input size="20" type="number" id="ymin" value="-2">
+            <input size="20" type="number" id="ymax" value="2">
             saturation 
             <select id="color_sat">
                 <option value="0.1">0.1</option>
@@ -78,12 +94,6 @@
                 <option value="0.9">0.9</option>
                 <option value="1">1</option>
             </select>
-            <br>
-            window
-            <input size="20" type="number" id="xmin" value="-2">
-            <input size="20" type="number" id="xmax" value="2">
-            <input size="20" type="number" id="ymin" value="-2">
-            <input size="20" type="number" id="ymax" value="2">
         </div>
         <br>
         <div id="displaydiv">

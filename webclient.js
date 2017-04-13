@@ -25,6 +25,9 @@ var params = {
     y_min: -2,
     y_max: 2,
     type: 0,
+    do_julia: 0,
+    jx: 0.285,
+    jy: 0.01,
 };
 
 var userRange = {};
@@ -272,6 +275,11 @@ function getParamsFromPage() {
     params.x_max = xmax;
     params.y_min = ymin;
     params.y_max = ymax;
+
+    var julia = document.getElementById('julia').checked ? 1 : 0;
+    params.do_julia = julia;
+    params.jx = parseFloat(document.getElementById('jx').value);
+    params.jy = parseFloat(document.getElementById('jy').value);
     submitJobs();
 }
 
@@ -311,6 +319,9 @@ function doOnceAtStart() {
     document.getElementById('xmax').addEventListener('change',getParamsFromPage);
     document.getElementById('ymin').addEventListener('change',getParamsFromPage);
     document.getElementById('ymax').addEventListener('change',getParamsFromPage);
+    document.getElementById('julia').addEventListener('change',getParamsFromPage);
+    document.getElementById('jx').addEventListener('change',getParamsFromPage);
+    document.getElementById('jy').addEventListener('change',getParamsFromPage);
 
     getParamsFromPage();
     adjustViewport();

@@ -19,6 +19,9 @@ function makeFractal(parms, cb) {
         [ 'x_tile', 'i' ],
         [ 'y_tile', 'i' ],
         [ 'type', 'i' ],
+        [ 'do_julia', 'i' ],
+        [ 'jx', 'f' ],
+        [ 'jy', 'f' ],
     ];
     args = argnames.map(function(n) { return parms[n[0]].toString(); });
     cmd += ' ' + args.join(' ');
