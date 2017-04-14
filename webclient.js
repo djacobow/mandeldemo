@@ -5,10 +5,10 @@ config = {
  sat: 0.5,
  lum: 0.5,
  // starter params
- x_min: -2,
- x_max: 2,
- y_min: -2,
- y_max: 2,
+ x_min: -3,
+ x_max: 3,
+ y_min: -3,
+ y_max: 3,
 };
 
 var roundBy = function(a,r) {
@@ -20,10 +20,12 @@ var params = {
     escape_val: 20,
     x_pels: roundBy(1024, 20),
     y_pels: roundBy(576, 20),
+    /*
     x_min: -2,
     x_max: 2,
     y_min: -2,
     y_max: 2,
+    */
     type: 0,
     do_julia: 0,
     jx: 0.285,
@@ -70,7 +72,7 @@ function hslToRgb(h, s, l){
 }
 
 function handleReturnedData(res) {
-    console.log(res.params);
+    // console.log(res.params);
 
     var canvas = document.getElementById('viewport');
     var ctx = canvas.getContext('2d');
@@ -170,7 +172,7 @@ function submitJobs() {
                 if (m < pkeys.length-1) urlchunks.push('&');
             }
             var final_url = urlchunks.join('');
-            console.log('FINAL_URL: ' + final_url);
+            // console.log('FINAL_URL: ' + final_url);
             render_urls.push(final_url);
             tilenum += 1;
         }
@@ -196,11 +198,33 @@ function submitJobs() {
 }
 
 
-function do_reset() {
+function makeCalcWindowSquareWithViewport() {
+    // this sets the calculation window to match the aspect ratio of the
+    // real window. This keeps the resulting image 'square'.
+    var x_center = (params.x_min + params.x_max) / 2;
+    var y_center = (params.y_min + params.y_max) / 2;
+    // Keep x zoom where it is, but make y zoom adjust to new
+    // viewport
+    var yx_ratio = params.y_pels / params.x_pels;
+    var x_width  = params.x_max - params.x_min;
+    var y_width  = x_width * yx_ratio;
+    var new_y_min = y_center - 0.5 * y_width;
+    var new_y_max = y_center + 0.5 * y_width;
+    params.y_min = new_y_min;
+    params.y_max = new_y_max;
+}
+
+function resetWindowWithViewport() {
+    console.log('resetWindowWithViewPort();');
     params.x_min = config.x_min;
     params.x_max = config.x_max;
     params.y_min = config.y_min;
     params.y_max = config.y_max;
+    makeCalcWindowSquareWithViewport();
+}
+
+function do_reset() {
+    resetWindowWithViewport();
     submitJobs();
 }
 
@@ -224,7 +248,8 @@ function storePort(which, evt) {
                 userRange.down[w] = t;
             }
         }
-        console.log(userRange);
+        // console.log(userRange);
+
 
         var new_min_x = params.x_min + 
                         (params.x_max - params.x_min) * (userRange.down.x / params.x_pels);
@@ -232,19 +257,26 @@ function storePort(which, evt) {
                         (params.x_max - params.x_min) * (userRange.up.x / params.x_pels);
         var new_min_y = params.y_min + 
                         (params.y_max - params.y_min) * (userRange.down.y / params.y_pels);
-        var new_max_y = params.y_min +
+            new_max_y = params.y_min +
                         (params.y_max - params.y_min) * (userRange.up.y / params.y_pels);
 
         params.x_min = new_min_x;
         params.x_max = new_max_x;
         params.y_min = new_min_y;
         params.y_max = new_max_y;
+
+        var force_aspect_ratio_fixed = true;
+        if (force_aspect_ratio_fixed) {
+            makeCalcWindowSquareWithViewport();
+        }
+
         submitJobs();
 
     }
 }
 
 function setDisplayWindow(x1,y1,x2,y2) {
+    console.log('setDisplayWindow();');
     document.getElementById('xmin').value = x1.toString();
     document.getElementById('ymin').value = y1.toString();
     document.getElementById('xmax').value = x2.toString();
@@ -280,6 +312,7 @@ function getParamsFromPage() {
     params.do_julia = julia;
     params.jx = parseFloat(document.getElementById('jx').value);
     params.jy = parseFloat(document.getElementById('jy').value);
+    makeCalcWindowSquareWithViewport();
     submitJobs();
 }
 
@@ -295,8 +328,8 @@ function adjustViewport() {
   params.y_pels = y;
   ctx.canvas.width  = x;
   ctx.canvas.height = y;
+  makeCalcWindowSquareWithViewport();
   console.log(params);
-  submitJobs();
 }
 
 function doOnceAtStart() {
@@ -305,26 +338,22 @@ function doOnceAtStart() {
     var resize_interval_id;
     window.addEventListener('resize', function() {
         clearTimeout(resize_interval_id);
-        resize_interval_id = setTimeout(adjustViewport,500);
+        resize_interval_id = setTimeout(function() {
+            adjustViewport();
+            submitJobs();
+        },500);
     });
 
-    document.getElementById('typesel').addEventListener('change',getParamsFromPage);
-    document.getElementById('tilex').addEventListener('change',getParamsFromPage);
-    document.getElementById('tiley').addEventListener('change',getParamsFromPage);
-    document.getElementById('escape').addEventListener('change',getParamsFromPage);
-    document.getElementById('maxiters').addEventListener('change',getParamsFromPage);
-    document.getElementById('color_sat').addEventListener('change',getParamsFromPage);
-    document.getElementById('color_lum').addEventListener('change',getParamsFromPage);
-    document.getElementById('xmin').addEventListener('change',getParamsFromPage);
-    document.getElementById('xmax').addEventListener('change',getParamsFromPage);
-    document.getElementById('ymin').addEventListener('change',getParamsFromPage);
-    document.getElementById('ymax').addEventListener('change',getParamsFromPage);
-    document.getElementById('julia').addEventListener('change',getParamsFromPage);
-    document.getElementById('jx').addEventListener('change',getParamsFromPage);
-    document.getElementById('jy').addEventListener('change',getParamsFromPage);
+    var ids = ['typesel','tilex','tiley','escape','maxiters','color_sat',
+               'color_lum','xmin','xmax','ymin','ymax','julia','jx','jy'];
+    for (var i=0; i<ids.length; i++) {
+        document.getElementById(ids[i]).addEventListener('change',getParamsFromPage);
+    }
 
     getParamsFromPage();
     adjustViewport();
+    do_reset();
+
     var canvas = document.getElementById('viewport');
     canvas.addEventListener('mousedown', function(evt) {
         evt.preventDefault();
