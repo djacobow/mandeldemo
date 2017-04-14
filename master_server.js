@@ -42,7 +42,7 @@ app.use(function(req, res) {
             res.end(data);
         });
     } else if (req.url.match(/render\//)) {
-        console.log('render request');
+        // console.log('render request');
         var oldpurl = url.parse(req.url);
 
         var slave_idx = submit_count % slaves.length;
@@ -50,9 +50,8 @@ app.use(function(req, res) {
         submit_count += 1;
         var newurl  = 'http://' + slave + ':5001/?' +
                       oldpurl.query;
-        console.log(newurl);
+        console.log(req.connection.remoteAddress.toString() + ' ' + newurl);
         request(newurl,function(perr,pres,pbody) {
-            console.log('render response');
             if (perr) {
                 console.log('render error');
                 console.log(perr);
@@ -64,7 +63,6 @@ app.use(function(req, res) {
             res.end(pbody);
         });
     } else {
-        console.log('ruh roh');
         res.writeHead(500,headers);
         res.end(JSON.stringify({'ERROR': 'Something went wrong.'}));
     }
