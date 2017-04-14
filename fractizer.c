@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <errno.h>
-#include <arpa/inet.h>
+
+typedef struct cp_t {
+ double r;
+ double i;
+} cp_t;
+
+typedef void (*znp1_calc_t)(cp_t *z, cp_t *c);
 
 typedef struct fparams_t {
     uint16_t max_iters;
@@ -25,10 +25,11 @@ typedef struct fparams_t {
     uint8_t  do_julia;
     double   jx;
     double   jy;
+    znp1_calc_t algo;
 } fparams_t;
 
 
-typedef uint8_t (*ppxlcalc_t)(fparams_t *, double, double, uint16_t *, double *);
+// typedef uint8_t (*ppxlcalc_t)(fparams_t *, double, double, uint16_t *, double *);
 
 fparams_t get_params(int argc, char *argv[]) {
     fparams_t params;
@@ -62,168 +63,150 @@ fparams_t get_params(int argc, char *argv[]) {
 
 };
 
-/*
-int open_socket(char *host, uint16_t port) {
-    int sockfd = 0;
-    int n =0;
-    struct sockaddr_in serv_addr;
+double cmag(cp_t *z) {
+    return sqrt(z->r * z->r + z->i * z->i);
+}
+cp_t csquare(cp_t *a) {
+    cp_t r;
+    r.r = a->r * a->r - a->i * a->i;
+    r.i = 2 * a->r * a->i;
+    return r;
+}
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        puts("Could not create socket.");
-        return sockfd;
-    }
-    memset(&serv_addr, '0', sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
-
-    int pt_res = inet_pton(AF_INET, host, &serv_addr.sin_addr);
-    if (pt_res <= 0) {
-        printf("HOST: %s pt_res %d\n",host, pt_res);
-        puts("inet_pton error");
-        return -1;
-    }
-
-    if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        puts("connect failed");
-        return -1;
-    }
-    return sockfd;
+cp_t ccube(cp_t *z) {
+    cp_t r;
+    r.r = z->r * z->r * z->r - 3 * z->r * z->i * z->i;
+    r.i = 3 * z->r * z->r * z->i - z->i * z->i * z->i;
+    return r;
 };
-*/
 
-static inline uint8_t calc_pixel_mb(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r, z_i, c_r, c_i;
+cp_t cadd(cp_t *a, cp_t *b) {
+    cp_t r;
+    r.r = a->r + b->r;
+    r.i = a->i + b->i;
+    return r;
+};
+
+cp_t csmul(cp_t *a, double m) {
+    cp_t r;
+    r.r = a->r * m;
+    r.i = a->i * m;
+    return r;
+}
+
+
+static inline uint8_t calc_pixel_generic(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+    cp_t z, c;
     if (pparams->do_julia) {
-        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
+        z.r = x; z.i = y; c.r = pparams->jx; c.i = pparams->jy;
     } else {
-        z_r = 0; z_i = 0; c_r = x; c_i = y;
+        z.r = 0; z.i = 0; c.r = x; c.i = y;
     };
     uint16_t iter = 0;
     double val = 0;
     while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        double z_n1_r = z_r * z_r - z_i * z_i + c_r;
-        double z_n1_i = 2.0 * z_r * z_i + c_i;
-        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
+        pparams->algo(&z, &c);
+        val = cmag(&z);
         iter++;
-        z_r = z_n1_r;
-        z_i = z_n1_i;
     }
     *pval = val;
     *piters = iter;
     return iter < pparams->max_iters;
 };
 
-static inline uint8_t calc_pixel_cos(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r, z_i, c_r, c_i;
-    if (pparams->do_julia) {
-        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
-    } else {
-        z_r = 0; z_i = 0; c_r = x; c_i = y;
-    };
-    uint16_t iter = 0;
-    double val = 0;
-    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        double z_n1_r = cos(z_r) * cosh(z_i);
-        double z_n1_i = -sin(z_r) * sinh(z_i);
-        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
-        iter++;
-        z_r = z_n1_r;
-        z_i = z_n1_i;
-    }
-    *pval = val;
-    *piters = iter;
-    return iter < pparams->max_iters;
+void znp1_mb(cp_t *z, cp_t *c) {
+    cp_t nz;
+    double n_z_r = z->r * z->r - z->i * z->i + c->r;
+    nz.i = 2.0 * z->r * z->i + c->i;
+    nz.r = n_z_r;
+    *z = nz;
+}
+
+void znp1_cos(cp_t *z, cp_t *c) {
+    cp_t nz;
+    nz.r = cos(z->r) * cosh(z->i);
+    nz.i = -sin(z->r) * sinh(z->i);
+    *z = nz;;
+}
+
+void znp1_mbtc(cp_t *z, cp_t *c) {
+    z->i = -z->i;
+    cp_t nz;
+    nz.r = z->r * z->r - z->i * z->i + c->r;
+    nz.i = 2.0 * z->r * z->i + c->i;
+    *z = nz;;
+}
+
+void znp1_mbbs(cp_t *z, cp_t *c) {
+    z->r = fabs(z->r);
+    z->i = fabs(z->i);
+    cp_t nz;
+    nz.r = z->r * z->r - z->i * z->i + c->r;
+    nz.i = 2.0 * z->r * z->i + c->i;
+    *z = nz;;
+}
+
+void znp1_mb3(cp_t *z, cp_t *c) {
+    cp_t nz;
+    nz.r = z->r * z->r * z->r - 3 * z->r * z->i * z->i + c->r;
+    nz.i = 3 * z->r * z->r * z->i - z->i * z->i * z->i + c->i;
+    *z = nz;;
+}
+
+void znp1_nf3(cp_t *z, cp_t *c) {
+    cp_t nz = ccube(z);
+    nz.r -= 1.0;
+    nz.r += c->r;
+    nz.r += c->i;
+    *z = nz;
+}
+
+void znp1_nf3m2z2(cp_t *z, cp_t *c) {
+    cp_t z3 = ccube(z);
+    cp_t z2 = csmul(z,-2);
+    cp_t nz = cadd(&z3,&z2);
+    nz.r += 2;
+    nz.r += c->r;
+    nz.r += c->i;
+    *z = nz;
 };
 
-static inline uint8_t calc_pixel_mbtc(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r, z_i, c_r, c_i;
-    if (pparams->do_julia) {
-        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
-    } else {
-        z_r = 0; z_i = 0; c_r = x; c_i = y;
-    };
-    uint16_t iter = 0;
-    double val = 0;
-    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        z_i = -z_i;
-        double z_n1_r = z_r * z_r - z_i * z_i + c_r;
-        double z_n1_i = 2.0 * z_r * z_i + c_i;
-        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
-        iter++;
-        z_r = z_n1_r;
-        z_i = z_n1_i;
-    }
-    *pval = val;
-    *piters = iter;
-    return iter < pparams->max_iters;
-};
-
-static inline uint8_t calc_pixel_mbbs(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r, z_i, c_r, c_i;
-    if (pparams->do_julia) {
-        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
-    } else {
-        z_r = 0; z_i = 0; c_r = x; c_i = y;
-    };
-    uint16_t iter = 0;
-    double val = 0;
-    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        z_r = fabs(z_r);
-        z_i = fabs(z_i);
-        double z_n1_r = z_r * z_r - z_i * z_i + c_r;
-        double z_n1_i = 2.0 * z_r * z_i + c_i;
-        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
-        iter++;
-        z_r = z_n1_r;
-        z_i = z_n1_i;
-    }
-    *pval = val;
-    *piters = iter;
-    return iter < pparams->max_iters;
-};
-
-
-static inline uint8_t calc_pixel_mb3(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
-    double z_r, z_i, c_r, c_i;
-    if (pparams->do_julia) {
-        z_r = x; z_i = y; c_r = pparams->jx; c_i = pparams->jy;
-    } else {
-        z_r = 0; z_i = 0; c_r = x; c_i = y;
-    };
-    uint16_t iter = 0;
-    double val = 0;
-    while ((iter < pparams->max_iters) && (val < pparams->escape_val)) {
-        double z_n1_r = z_r * z_r * z_r - 3 * z_r * z_i * z_i + c_r;
-        double z_n1_i = 3 * z_r * z_r * z_i - z_i * z_i * z_i + c_i;
-        val = sqrt(z_n1_r * z_n1_r + z_n1_i * z_n1_i);
-        iter++;
-        z_r = z_n1_r;
-        z_i = z_n1_i;
-    }
-    *pval = val;
-    *piters = iter;
-    return iter < pparams->max_iters;
-};
+void znp1_nf8p15z4m16(cp_t *z, cp_t *c) {
+    cp_t z2 = csquare(z);
+    cp_t z4 = csquare(&z2);
+    cp_t z8 = csquare(&z4);
+    cp_t z14_15 = csmul(&z4,15);
+    cp_t nz = cadd(&z8,&z14_15);
+    nz.r -= 16;
+    nz.r += c->r;
+    nz.r += c->i;
+    *z = nz;
+}
 
 void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
     double x_step = (pparams->x_max - pparams->x_min) / (double)pparams->x_pels;
     double y_step = (pparams->y_max - pparams->y_min) / (double)pparams->y_pels;
 
-    ppxlcalc_t ppxlcalc = calc_pixel_mb;
+    pparams->algo = znp1_mb;
+
     switch (pparams->type) {
-        case 1 : ppxlcalc = calc_pixel_mb3; break;
-        case 2 : ppxlcalc = calc_pixel_mbbs; break;
-        case 3 : ppxlcalc = calc_pixel_mbtc; break;
-        case 4 : ppxlcalc = calc_pixel_cos; break;
-        default: ppxlcalc = calc_pixel_mb; 
+        case 1 : pparams->algo = znp1_mb3; break;
+        case 2 : pparams->algo = znp1_mbbs; break;
+        case 3 : pparams->algo = znp1_mbtc; break;
+        case 4 : pparams->algo = znp1_cos; break;
+        case 5 : pparams->algo = znp1_nf3; break;
+        case 6 : pparams->algo = znp1_nf3m2z2; break;
+        case 7 : pparams->algo = znp1_nf8p15z4m16; break;
+        default: pparams->algo = znp1_mb; break;
     }
+
     for (uint16_t j=0; j<pparams->y_pels; j++) {
         double y = pparams->y_min + j * y_step;
         for (uint16_t i=0; i<pparams->x_pels; i++) {
             double x = pparams->x_min + i * x_step;
             uint16_t iters = 0;
             double val = 0;
-            ppxlcalc(pparams, x, y, &iters, &val);
+            calc_pixel_generic(pparams, x, y, &iters, &val);
             rbuf[i + j * pparams->x_pels] = iters;
         }
     };
