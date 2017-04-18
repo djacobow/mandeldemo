@@ -124,9 +124,9 @@ void znp1_mb(cp_t *z, cp_t *c) {
 
 void znp1_cos(cp_t *z, cp_t *c) {
     cp_t nz;
-    nz.r = cos(z->r) * cosh(z->i);
-    nz.i = -sin(z->r) * sinh(z->i);
-    *z = nz;;
+    nz.r = cos(z->r) * cosh(z->i) + c->r;
+    nz.i = -sin(z->r) * sinh(z->i) + c->i;
+    *z = nz;
 }
 
 void znp1_mbtc(cp_t *z, cp_t *c) {
@@ -148,38 +148,36 @@ void znp1_mbbs(cp_t *z, cp_t *c) {
 
 void znp1_mb3(cp_t *z, cp_t *c) {
     cp_t nz;
-    nz.r = z->r * z->r * z->r - 3 * z->r * z->i * z->i + c->r;
-    nz.i = 3 * z->r * z->r * z->i - z->i * z->i * z->i + c->i;
+    nz = ccube(z);
+    nz.r += c->r;
+    nz.i += c->i;
     *z = nz;;
 }
 
 void znp1_nf3(cp_t *z, cp_t *c) {
     cp_t nz = ccube(z);
-    nz.r -= 1.0;
-    nz.r += c->r;
-    nz.r += c->i;
+    nz.r += c->r - 1.0;
+    nz.i += c->i;
     *z = nz;
 }
 
-void znp1_nf3m2z2(cp_t *z, cp_t *c) {
-    cp_t z3 = ccube(z);
-    cp_t z2 = csmul(z,-2);
-    cp_t nz = cadd(&z3,&z2);
-    nz.r += 2;
+void znp1_nf3m2z(cp_t *z, cp_t *c) {
+    cp_t a = ccube(z);
+    cp_t b = csmul(z,-2);
+    cp_t nz = cadd(&a,&b);
     nz.r += c->r;
-    nz.r += c->i;
+    nz.i += c->i;
     *z = nz;
 };
 
-void znp1_nf8p15z4m16(cp_t *z, cp_t *c) {
+void znp1_nf8p15z4(cp_t *z, cp_t *c) {
     cp_t z2 = csquare(z);
     cp_t z4 = csquare(&z2);
     cp_t z8 = csquare(&z4);
     cp_t z14_15 = csmul(&z4,15);
     cp_t nz = cadd(&z8,&z14_15);
-    nz.r -= 16;
-    nz.r += c->r;
-    nz.r += c->i;
+    nz.r += c->r - 0;
+    nz.i += c->i;
     *z = nz;
 }
 
@@ -195,8 +193,8 @@ void generate_fractal(fparams_t *pparams, uint16_t *rbuf) {
         case 3 : pparams->algo = znp1_mbtc; break;
         case 4 : pparams->algo = znp1_cos; break;
         case 5 : pparams->algo = znp1_nf3; break;
-        case 6 : pparams->algo = znp1_nf3m2z2; break;
-        case 7 : pparams->algo = znp1_nf8p15z4m16; break;
+        case 6 : pparams->algo = znp1_nf3m2z; break;
+        case 7 : pparams->algo = znp1_nf8p15z4; break;
         default: pparams->algo = znp1_mb; break;
     }
 
@@ -235,6 +233,7 @@ void dump_fractal(fparams_t *pparams, uint16_t *rbuf) {
 };
 
 int main(int argc, char *argv[]) {
+
     fparams_t params = get_params(argc, argv);
 
     uint16_t *rdata = malloc(sizeof(uint16_t) * params.x_pels * params.y_pels);
