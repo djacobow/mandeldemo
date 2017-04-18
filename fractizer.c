@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdint.h>
 
+#define INLINEIT static inline
+
 typedef struct cp_t {
  double r;
  double i;
@@ -63,31 +65,31 @@ fparams_t get_params(int argc, char *argv[]) {
 
 };
 
-double cmag(cp_t *z) {
+INLINEIT double cmag(cp_t *z) {
     return sqrt(z->r * z->r + z->i * z->i);
 }
-cp_t csquare(cp_t *a) {
+INLINEIT cp_t csquare(cp_t *a) {
     cp_t r;
     r.r = a->r * a->r - a->i * a->i;
     r.i = 2 * a->r * a->i;
     return r;
 }
 
-cp_t ccube(cp_t *z) {
+INLINEIT cp_t ccube(cp_t *z) {
     cp_t r;
     r.r = z->r * z->r * z->r - 3 * z->r * z->i * z->i;
     r.i = 3 * z->r * z->r * z->i - z->i * z->i * z->i;
     return r;
 };
 
-cp_t cadd(cp_t *a, cp_t *b) {
+INLINEIT cp_t cadd(cp_t *a, cp_t *b) {
     cp_t r;
     r.r = a->r + b->r;
     r.i = a->i + b->i;
     return r;
 };
 
-cp_t csmul(cp_t *a, double m) {
+INLINEIT cp_t csmul(cp_t *a, double m) {
     cp_t r;
     r.r = a->r * m;
     r.i = a->i * m;
@@ -95,7 +97,7 @@ cp_t csmul(cp_t *a, double m) {
 }
 
 
-static inline uint8_t calc_pixel_generic(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
+INLINEIT uint8_t calc_pixel_generic(fparams_t *pparams, double x, double y, uint16_t *piters, double *pval) {
     cp_t z, c;
     if (pparams->do_julia) {
         z.r = x; z.i = y; c.r = pparams->jx; c.i = pparams->jy;
@@ -114,7 +116,7 @@ static inline uint8_t calc_pixel_generic(fparams_t *pparams, double x, double y,
     return iter < pparams->max_iters;
 };
 
-void znp1_mb(cp_t *z, cp_t *c) {
+INLINEIT void znp1_mb(cp_t *z, cp_t *c) {
     cp_t nz;
     double n_z_r = z->r * z->r - z->i * z->i + c->r;
     nz.i = 2.0 * z->r * z->i + c->i;
@@ -122,14 +124,14 @@ void znp1_mb(cp_t *z, cp_t *c) {
     *z = nz;
 }
 
-void znp1_cos(cp_t *z, cp_t *c) {
+INLINEIT void znp1_cos(cp_t *z, cp_t *c) {
     cp_t nz;
     nz.r = cos(z->r) * cosh(z->i) + c->r;
     nz.i = -sin(z->r) * sinh(z->i) + c->i;
     *z = nz;
 }
 
-void znp1_mbtc(cp_t *z, cp_t *c) {
+INLINEIT void znp1_mbtc(cp_t *z, cp_t *c) {
     z->i = -z->i;
     cp_t nz;
     nz.r = z->r * z->r - z->i * z->i + c->r;
@@ -137,7 +139,7 @@ void znp1_mbtc(cp_t *z, cp_t *c) {
     *z = nz;;
 }
 
-void znp1_mbbs(cp_t *z, cp_t *c) {
+INLINEIT void znp1_mbbs(cp_t *z, cp_t *c) {
     z->r = fabs(z->r);
     z->i = fabs(z->i);
     cp_t nz;
@@ -146,7 +148,7 @@ void znp1_mbbs(cp_t *z, cp_t *c) {
     *z = nz;;
 }
 
-void znp1_mb3(cp_t *z, cp_t *c) {
+INLINEIT void znp1_mb3(cp_t *z, cp_t *c) {
     cp_t nz;
     nz = ccube(z);
     nz.r += c->r;
@@ -154,14 +156,14 @@ void znp1_mb3(cp_t *z, cp_t *c) {
     *z = nz;;
 }
 
-void znp1_nf3(cp_t *z, cp_t *c) {
+INLINEIT void znp1_nf3(cp_t *z, cp_t *c) {
     cp_t nz = ccube(z);
     nz.r += c->r - 1.0;
     nz.i += c->i;
     *z = nz;
 }
 
-void znp1_nf3m2z(cp_t *z, cp_t *c) {
+INLINEIT void znp1_nf3m2z(cp_t *z, cp_t *c) {
     cp_t a = ccube(z);
     cp_t b = csmul(z,-2);
     cp_t nz = cadd(&a,&b);
@@ -170,7 +172,7 @@ void znp1_nf3m2z(cp_t *z, cp_t *c) {
     *z = nz;
 };
 
-void znp1_nf8p15z4(cp_t *z, cp_t *c) {
+INLINEIT void znp1_nf8p15z4(cp_t *z, cp_t *c) {
     cp_t z2 = csquare(z);
     cp_t z4 = csquare(&z2);
     cp_t z8 = csquare(&z4);
