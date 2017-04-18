@@ -362,6 +362,18 @@ function doOnceAtStart() {
     canvas.addEventListener('mouseup', function(evt) {
         storePort('up', evt);
     });
+
+    canvas.addEventListener('touchstart', function(evt) {
+        evt.preventDefault();
+        console.log('touchStart()');
+        storePort('down',evt.changedTouches[0]);
+    });
+
+    canvas.addEventListener('touchend', function(evt) {
+        evt.preventDefault();
+        console.log('touchEnd()');
+        storePort('up',evt.changedTouches[0]);
+    });
 }
 
 doOnceAtStart();
