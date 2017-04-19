@@ -47,6 +47,12 @@ app.use(function(req, res) {
             res.writeHead(200);
             res.end(data);
         });
+    } else if (req.url.match(/favicon\.ico/)) {
+        fs.readFile('favicon.ico', function(err, data) {
+            headers['Content-Type'] = 'image/x-icon',
+            res.writeHead(200);
+            res.end(data);
+        });
     } else if (req.url.match(/render\//)) {
         // console.log('render request');
         var oldpurl = url.parse(req.url);
@@ -56,7 +62,8 @@ app.use(function(req, res) {
         submit_count += 1;
         var newurl  = 'http://' + slave + ':5001/?' +
                       oldpurl.query;
-        console.log(req.connection.remoteAddress.toString() + ' ' + newurl);
+        var datestr = (new Date);
+        console.log(datestr + ' ' + req.connection.remoteAddress.toString() + ' ' + newurl);
         request(newurl,function(perr,pres,pbody) {
             if (perr) {
                 console.log('render error');
