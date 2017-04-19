@@ -35,9 +35,15 @@ app.use(function(req, res) {
             res.writeHead(200);
             res.end(data);
         });
-    } else if (req.url.match(/\.js$/)) {
+    } else if (req.url.match(/webclient\.js$/)) {
         console.log('get client js');
         fs.readFile('webclient.js', function(err, data) {
+            res.writeHead(200);
+            res.end(data);
+        });
+    } else if (req.url.match(/fractizer\.js$/)) {
+        console.log('get local fractizer js');
+        fs.readFile('fractizer.js', function(err, data) {
             res.writeHead(200);
             res.end(data);
         });
