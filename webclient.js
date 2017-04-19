@@ -30,6 +30,7 @@ var params = {
     do_julia: 0,
     jx: 0.285,
     jy: 0.01,
+    do_local: 0,
 };
 
 var userRange = {};
@@ -123,6 +124,25 @@ function shuffle(a) {
     }
 }
 
+function calc_fractal(inurl,cb) {
+    inurl = inurl.replace(/^.*\?/,'');
+    inargs = inurl.split(/&/);
+    var args = {};
+    for (var i=0; i<inargs.length;i++) {
+        var inarg = inargs[i];
+        var aps = inarg.split(/=/);
+        args[aps[0]] = parseFloat(aps[1]);
+    }
+
+    var data = generate_fractal(args);
+
+    var rv = {
+        params: args,
+        data: data,
+    };
+    return cb(rv);
+}
+
 function submitJobs() {
 
     setDisplayWindow(params.x_min,params.y_min,params.x_max,params.y_max);
@@ -186,13 +206,17 @@ function submitJobs() {
 
     for (var i=0; i<render_urls.length; i++) {
         var render_url = render_urls[i];
-        var xhr = new XMLHttpRequest();
-        /* jslint loopfunc:true */
-        xhr.addEventListener('load', function(evt) {
-            handleReturnedData(JSON.parse(evt.currentTarget.response));
-        });
-        xhr.open('GET',render_url);
-        xhr.send();
+        if (params.do_local) {
+            calc_fractal(render_url,handleReturnedData);
+        } else {
+            var xhr = new XMLHttpRequest();
+            /* jslint loopfunc:true */
+            xhr.addEventListener('load', function(evt) {
+                handleReturnedData(JSON.parse(evt.currentTarget.response));
+            });
+            xhr.open('GET',render_url);
+            xhr.send();
+        }
     }
 
 }
@@ -312,6 +336,8 @@ function getParamsFromPage() {
     params.do_julia = julia;
     params.jx = parseFloat(document.getElementById('jx').value);
     params.jy = parseFloat(document.getElementById('jy').value);
+    var local = document.getElementById('local').checked ? 1 : 0;
+    params.do_local = local;
     makeCalcWindowSquareWithViewport();
     submitJobs();
 }
@@ -345,7 +371,8 @@ function doOnceAtStart() {
     });
 
     var ids = ['typesel','tilex','tiley','escape','maxiters','color_sat',
-               'color_lum','xmin','xmax','ymin','ymax','julia','jx','jy'];
+               'color_lum','xmin','xmax','ymin','ymax','julia','jx','jy',
+               'local'];
     for (var i=0; i<ids.length; i++) {
         document.getElementById(ids[i]).addEventListener('change',getParamsFromPage);
     }
