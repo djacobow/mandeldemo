@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cd ~/mandeldemo
-./slave_server.js 2>&1 < /dev/null &
+nohup ./slave_server.js > /dev/null < /dev/null 2>&1  &
+exit
 
 
