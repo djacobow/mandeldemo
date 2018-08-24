@@ -1,0 +1,18 @@
+[Unit]
+Description=Mandel Demo Fractizer Service
+
+[Service]
+Type=simple
+Restart=always
+User=pi
+Group=pi
+RestartSec=10
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+WorkingDirectory=/home/pi/cluster/mandeldemo
+ExecStart=/usr/bin/env nodejs master_server.js
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=mandeldemo.service
+
+[Install]
+WantedBy=multi-user.target
