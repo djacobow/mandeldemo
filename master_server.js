@@ -66,7 +66,7 @@ app.use(function(req, res) {
         console.log(datestr + ' ' + req.connection.remoteAddress.toString() + ' ' + newurl);
         request(newurl,function(perr,pres,pbody) {
             if (perr) {
-                console.log('render error');
+                console.log('render ERROR from: ' + newurl)
                 console.log(perr);
                 res.writeHead(500,headers);
                 res.end('');
