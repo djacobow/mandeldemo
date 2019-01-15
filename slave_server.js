@@ -3,7 +3,7 @@
 var connect = require('connect');
 var compression = require('compression');
 var url = require('url');
-var fr = require('./build/Release/fractizer');
+var fr = require('./build/Debug/fractizer');
 
 
 function setParamTypes(inparms) {
@@ -68,19 +68,19 @@ app.use(function(req, res) {
         'Access-Control-Allow-Origin': '*',
     };
 
-    var out = {
-        params: parms1,
-        data: fr.run(parms1),
-    };
-    var rstr  = JSON.stringify(out, (k,v) => {
-        if (v instanceof Uint16Array) {
-            return Array.apply([],v);
-        }
-        return v;
-    });
+    
+    fr.aRun(parms1,(err,data) => {
+        var out = { params: parms1, };
 
-    res.writeHead(200,headers);
-    res.end(rstr);
+        if ((data === null) || (typeof data === 'undefined')) {
+            out.data = [];
+        } else {
+            out.data = Array.from(data);
+        }
+        var rstr  = JSON.stringify(out);
+        res.writeHead(200,headers);
+        res.end(rstr);
+    });
 });
 
 app.listen(5001);
