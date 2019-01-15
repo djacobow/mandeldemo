@@ -2,7 +2,7 @@
     "targets": [
         {
             "target_name": "fractizer",
-            "sources": [ "fractizer.cpp" ]
+            "sources": [ "native/fractizer.cpp", "native/wrapper.cpp" ]
         }
     ]
 }
