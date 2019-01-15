@@ -3,7 +3,6 @@
 
 #include <math.h>
 #include <stdint.h>
-#include <node_api.h>
 #include <iostream>
 
 #define INLINEIT static inline

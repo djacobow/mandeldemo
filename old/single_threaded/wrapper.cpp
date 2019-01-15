@@ -1,4 +1,5 @@
 #include "fractizer.h"
+#include <node_api.h>
 
 bool get_named(napi_env env, napi_value obj, const char *name, uint32_t *tuint, double *tdouble) {
     bool hasit = false;
