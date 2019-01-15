@@ -1,11 +1,12 @@
-#!/usr/bin/env nodejs
+#!/home/pi/.nvm/versions/node/v10.0.0/bin/node
 
 var connect = require('connect');
 var compression = require('compression');
-var chprocess = require('child_process');
 var url = require('url');
+var fr = require('./build/Release/fractizer');
 
-function makeFractal(parms, cb) {
+
+function setParamTypes(inparms) {
     cmd = "./fractizer";
     argnames = [
         [ 'max_iters', 'i', ],
@@ -23,46 +24,33 @@ function makeFractal(parms, cb) {
         [ 'jx', 'f' ],
         [ 'jy', 'f' ],
     ];
-    args = argnames.map(function(n) { return parms[n[0]].toString(); });
-    cmd += ' ' + args.join(' ');
 
-    console.log(cmd);
-
-    chprocess.exec(cmd, {maxBuffer: 1024 * 1024 * 64 }, function(err, stdout, stdeff) {
-        if (err) console.log("ERROR: " + err);
-        var res = {
-            'params': {},
-            'data': [],
+    outparms = {};
+    argnames.forEach((a) => {
+        var aname = a[0];
+        var atype = a[1];
+        if (inparms.hasOwnProperty(aname)) {
+            outparms[aname] = atype == 'i' ? parseInt(inparms[aname]) : parseFloat(inparms[aname]);
         };
-        var lines = stdout.split("\n");
-        for (var i=0; i<lines.length; i++) {
-            var line = lines[i];
-            if (i === 0) {
-                var chunks = line.split(/\s/);
-                for (var j=0;j<chunks.length;j++) {
-                    if (argnames[j][1] === 'i') {
-                        res.params[argnames[j][0]] = parseInt(chunks[j]);
-                    } else {
-                        res.params[argnames[j][0]] = parseFloat(chunks[j]);
-                    }
-                }
-            } else if (line === 'all_done') {
-                return cb(null, res);
-            } else {
-                res.data.push(parseInt(line));
-            }
-        }
     });
+
+    console.log(outparms);
+    return outparms;
 }
 
 function getParamsFromUrl(inurl) {
     console.log(inurl);
     var sp = url.parse(inurl).query;
-    var chunks = sp.split(/&/);
+    console.log(sp);
     var res = {};
-    for (var i=0; i< chunks.length; i++) {
-        var nv = chunks[i].split(/=/);
-        res[nv[0]] = nv[1];
+    try {
+        var chunks = sp.split(/&/);
+        for (var i=0; i< chunks.length; i++) {
+            var nv = chunks[i].split(/=/);
+            res[nv[0]] = nv[1];
+        }
+    } catch(e) {
+        console.error(e);
     }
     return res;
 }
@@ -72,22 +60,27 @@ app.use(compression({ filter: function(req,res) { return true; } }));
 
 app.use(function(req, res) {
     console.log('got request');
-    var parms = getParamsFromUrl(req.url);
+    var parms0 = getParamsFromUrl(req.url);
+    var parms1 = setParamTypes(parms0);
+
     var headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
     };
-    makeFractal(parms, function(ferr, fres) {
-        if (ferr) {
-            res.writeHead(500,headers);
-            res.end(JSON.stringify({'ERROR': 'Something went wrong.'}));
-            return;
+
+    var out = {
+        params: parms1,
+        data: fr.run(parms1),
+    };
+    var rstr  = JSON.stringify(out, (k,v) => {
+        if (v instanceof Uint16Array) {
+            return Array.apply([],v);
         }
-        res.writeHead(200,headers);
-        res.end(JSON.stringify(fres));
+        return v;
     });
+
+    res.writeHead(200,headers);
+    res.end(rstr);
 });
 
 app.listen(5001);
-
-
