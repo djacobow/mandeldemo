@@ -62,6 +62,7 @@ public:
         if (get_named(parms_arg, "x_tile", tuint, tdouble)) { parms.x_tile = tuint; };
         if (get_named(parms_arg, "y_tile", tuint, tdouble)) { parms.y_tile = tuint; };
         if (get_named(parms_arg, "type", tuint, tdouble)) { parms.type = tuint; };
+        if (get_named(parms_arg, "do_julia", tuint, tdouble)) { parms.do_julia = tdouble; };
         if (get_named(parms_arg, "jx", tuint, tdouble)) { parms.jx = tdouble; };
         if (get_named(parms_arg, "jy", tuint, tdouble)) { parms.jy = tdouble; };
 
