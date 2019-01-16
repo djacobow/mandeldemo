@@ -3,7 +3,7 @@
 var connect = require('connect');
 var compression = require('compression');
 var url = require('url');
-var fr = require('./build/Debug/fractizer');
+var fr = require('./build/Release/fractizer');
 
 
 function setParamTypes(inparms) {
