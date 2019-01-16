@@ -31,6 +31,7 @@ protected:
         env.Null(), oary
       }
     );
+    delete [] bufptr;
   }
 
 public:
