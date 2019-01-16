@@ -7,6 +7,8 @@
 
 #define INLINEIT static inline
 
+extern "C" {
+
 typedef struct cp_t {
  double r;
  double i;
@@ -36,6 +38,8 @@ typedef struct fparams_t {
 void showParams(fparams_t *p);
 void set_default_params(fparams_t *p);
 void generate_fractal(fparams_t *pparams, uint16_t *rbuf);
+
+}
 
 #endif
 
