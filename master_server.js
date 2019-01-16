@@ -10,6 +10,7 @@ var submit_count = 0;
 
 var local_debug = false;
 var slaves = [ 'slave0', 'slave1', 'slave2', 'slave3', 'slave4' ,'slave5' ];
+// var slaves = [ 'slave0', ];
 if (local_debug) {
     slaves = [ 'localhost', ];
 }

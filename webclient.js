@@ -20,12 +20,6 @@ var params = {
     escape_val: 20,
     x_pels: roundBy(1024, 20),
     y_pels: roundBy(576, 20),
-    /*
-    x_min: -2,
-    x_max: 2,
-    y_min: -2,
-    y_max: 2,
-    */
     type: 0,
     do_julia: 0,
     jx: 0.285,
@@ -192,7 +186,7 @@ function submitJobs() {
                 if (m < pkeys.length-1) urlchunks.push('&');
             }
             var final_url = urlchunks.join('');
-            // console.log('FINAL_URL: ' + final_url);
+            console.log('FINAL_URL: ' + final_url);
             render_urls.push(final_url);
             tilenum += 1;
         }
@@ -377,7 +371,8 @@ function doOnceAtStart() {
         document.getElementById(ids[i]).addEventListener('change',getParamsFromPage);
     }
 
-    getParamsFromPage();
+    // getParamsFromPage();
+    console.log(params);
     adjustViewport();
     do_reset();
 
