@@ -3,11 +3,12 @@
 
 #include <math.h>
 #include <stdint.h>
-#include <iostream>
 
 #define INLINEIT static inline
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 typedef struct cp_t {
  double r;
@@ -39,7 +40,9 @@ void showParams(fparams_t *p);
 void set_default_params(fparams_t *p);
 void generate_fractal(fparams_t *pparams, uint16_t *rbuf);
 
+#ifdef __cplusplus
 }
+#endif
 
 #endif
 

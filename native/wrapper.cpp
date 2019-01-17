@@ -1,5 +1,6 @@
 #include "fractizer.h"
 #include <napi.h>
+#include <iostream>
 
 class aWorker : public Napi::AsyncWorker {
 

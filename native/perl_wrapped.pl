@@ -5,7 +5,7 @@ use warnings qw(all);
 use Data::Dumper;
 use Inline C =>
     Config =>
-        CCFLAGS => "-g -O0",
+#        CCFLAGS => "-g -O0",
         INC => '.',
         TYPEMAPS => 'perl_typemaps',
         ENABLE => "AUTOWRAP";
@@ -44,7 +44,7 @@ __DATA__
 __C__
 
 #include "fractizer.h"
-#include "fractizer.c"
+#include "fractizer.cpp"
 
 fparams_t *new_fparams() {
     fparams_t *p = malloc(sizeof(fparams_t));
@@ -70,15 +70,6 @@ void fr_set_type(fparams_t *p, uint8_t i)       { p->type = i; };
 void fr_set_do_julia(fparams_t *p, uint8_t i)   { p->do_julia = i; };
 void fr_set_jx(fparams_t *p, double d)          { p->jx = d; };
 void fr_set_jy(fparams_t *p, double d)          { p->jy = d; };
-
-uint16_t *fr_makeOutputBuffer(fparams_t *p) {
-    uint16_t *o = malloc(sizeof(uint16_t) * p->x_pels * p->y_pels);
-    return o;
-}
-
-void fr_freeOutputBuffer(uint16_t *o) {
-    if (o) free(o);
-};
 
 void fr_show(fparams_t *p) {
     showParams(p);

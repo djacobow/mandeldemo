@@ -1,4 +1,5 @@
 #include "fractizer.h"
+#include <stdio.h>
 
 INLINEIT double cmag(cp_t *z) {
     return sqrt(z->r * z->r + z->i * z->i);
@@ -165,6 +166,19 @@ void set_default_params(fparams_t *p) {
 };
 
 void showParams(fparams_t *p) {
+    printf("max_iters   : %d\n",p->max_iters);
+    printf("escape_Val  : %f\n",p->escape_val);
+    printf("x_range     : [%f : %f ]\n",p->x_min,p->x_max);
+    printf("y_range     : [%f : %f ]\n",p->y_min,p->y_max);
+    printf("size        : (%d : %d )\n",p->x_pels,p->y_pels);
+    printf("tiles       : (%d : %d )\n",p->x_tile,p->y_tile);
+    printf("type        : %d\n",p->type);
+    printf("do_julia    : %d\n",p->do_julia);
+    printf("jparams     : (%f : %f )\n",p->jx,p->jy);
+};
+
+/*
+void showParams(fparams_t *p) {
     std::cout << "max_iters   : " << p->max_iters  << std::endl;
     std::cout << "escape_Val  : " << p->escape_val << std::endl;
     std::cout << "x_range     : " << "[" << p->x_min << ":" << p->x_max << "]" << std::endl;
@@ -175,4 +189,4 @@ void showParams(fparams_t *p) {
     std::cout << "do_julia    : " << p->do_julia << std::endl;
     std::cout << "jparams     : " << "(" << p->jx << "," << p->jy << ")" << std::endl;
 };
-
+*/
