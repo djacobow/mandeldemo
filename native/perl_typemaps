@@ -1,0 +1,12 @@
+
+fparams_t *    T_PTR
+cp_t *         T_PTR
+uint16_t *     T_PTR
+
+uint32_t       T_UV
+uint16_t       T_UV
+int32_t        T_IV
+int16_t        T_IV
+uint8_t        T_U_CHAR
+int8_t         T_CHAR
+
